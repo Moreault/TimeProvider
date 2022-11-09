@@ -1,48 +1,48 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	  <Version>2.0.0-beta1</Version>
-	  <RootNamespace>ToolBX.$(AssemblyName)</RootNamespace>
-	  <PackageId>ToolBX.$(AssemblyName)</PackageId>
-	  <Product>ToolBX.$(AssemblyName)</Product>
-	  <Authors>Mathieu Moreault</Authors>
-	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	  <RepositoryUrl>https://github.com/Moreault/TimeProvider</RepositoryUrl>
-	  <PackageProjectUrl>https://github.com/Moreault/TimeProvider</PackageProjectUrl>
-	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	  <Description>A static utility class that can be used to override current time.</Description>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
-	  <PackageIcon>timeprovider.png</PackageIcon>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Version>2.0.0</Version>
+		<RootNamespace>ToolBX.$(AssemblyName)</RootNamespace>
+		<PackageId>ToolBX.$(AssemblyName)</PackageId>
+		<Product>ToolBX.$(AssemblyName)</Product>
+		<Authors>Mathieu Moreault</Authors>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<RepositoryUrl>https://github.com/Moreault/TimeProvider</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Moreault/TimeProvider</PackageProjectUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>A static utility class that can be used to override current time.</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>timeprovider.png</PackageIcon>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\timeprovider.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\timeprovider.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Resources\Exceptions.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Exceptions.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Resources\Exceptions.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Exceptions.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\Exceptions.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Exceptions.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Resources\Exceptions.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Exceptions.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
 
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
