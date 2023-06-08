@@ -62,20 +62,21 @@ public static class TimeProvider
     /// <summary>
     /// Freezes current time in place until <see cref="Reset"/> is used.
     /// </summary>
-    public static void Freeze() => Freeze(Now);
+    public static DateTimeOffset Freeze() => Freeze(Now);
 
     /// <summary>
     /// Freezes specified time in place until <see cref="Reset"/> is used.
     /// </summary>
-    public static void Freeze(DateTime date) => Freeze((DateTimeOffset)date);
+    public static DateTimeOffset Freeze(DateTime date) => Freeze((DateTimeOffset)date);
 
     /// <summary>
     /// Freezes specified time in place until <see cref="Reset"/> is used.
     /// </summary>
-    public static void Freeze(DateTimeOffset date)
+    public static DateTimeOffset Freeze(DateTimeOffset date)
     {
         Override(date);
         _frozenTime = date;
+        return date;
     }
 
     /// <summary>
