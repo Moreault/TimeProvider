@@ -2,6 +2,8 @@
 # TimeProvider
 A static utility class for overriding system time.
 
+:warning: The `TimeProvider` class will be renamed `GlobalTimeProvider` in 3.0.0 to avoid name collisions with .NET 8's new `TimeProvider` class.
+
 ## Getting started
 
 In order to use this library to its full potential, all your DateTime.Now calls must be changed to TimeProvider.Now. This will ensure that time overrides are accurate for your entire application.
