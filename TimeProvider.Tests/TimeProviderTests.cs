@@ -1,12 +1,3 @@
-using AutoFixture;
-using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Threading;
-using TimeProvider.Tests;
-using ToolBX.Eloquentest;
-using ToolBX.TimeProvider.Resources;
-
 namespace ToolBX.TimeProvider.Tests;
 
 public abstract class TimeProviderTesterBase : Tester
@@ -19,7 +10,7 @@ public abstract class TimeProviderTesterBase : Tester
 }
 
 [TestClass]
-public class TimeProviderTester
+public class TimeProviderTests
 {
     [TestClass]
     public class Now : TimeProviderTesterBase
