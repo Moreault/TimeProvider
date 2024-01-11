@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TimeProvider.Tests;
+﻿namespace ToolBX.TimeProvider.Tests;
 
 internal static class DateTimeExtensions
 {

@@ -1,6 +1,4 @@
-﻿using ToolBX.TimeProvider.Resources;
-
-namespace ToolBX.TimeProvider;
+﻿namespace ToolBX.TimeProvider;
 
 public static class TimeProvider
 {
