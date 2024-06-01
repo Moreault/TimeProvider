@@ -5,12 +5,13 @@ public abstract class TimeProviderTesterBase : Tester
     protected override void InitializeTest()
     {
         base.InitializeTest();
-        TimeProvider.Reset();
+        Dummy.Customize(new DateTimeCustomization(), new DateTimeOffsetCustomization());
+        GlobalTimeProvider.Reset();
     }
 }
 
 [TestClass]
-public class TimeProviderTests
+public class GlobalTimeProviderTests
 {
     [TestClass]
     public class Now : TimeProviderTesterBase
@@ -22,7 +23,7 @@ public class TimeProviderTests
             var now = DateTimeOffset.Now.TrimMilliseconds();
 
             //Act
-            var result = TimeProvider.Now.TrimMilliseconds();
+            var result = GlobalTimeProvider.Now.TrimMilliseconds();
 
             //Assert
             result.TrimMilliseconds().Should().Be(now.TrimMilliseconds());
@@ -32,11 +33,11 @@ public class TimeProviderTests
         public void WhenIsFrozenAndNotOverriden_ReturnFrozenTime()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
             //Act
-            var result = TimeProvider.Now;
+            var result = GlobalTimeProvider.Now;
 
             //Assert
             result.Should().Be(now);
@@ -46,14 +47,14 @@ public class TimeProviderTests
         public void WhenIsNotFrozenAndOverriden_ReturnTimeDifferenceBetweenNowAndOverride()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Override(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Override(now);
 
             //Act
-            var result = TimeProvider.Now;
+            var result = GlobalTimeProvider.Now;
 
             //Assert
-            result.TrimMilliseconds().Should().Be(now.TrimMilliseconds());
+            result.Should().BeCloseTo(now, TimeSpan.FromSeconds(1));
         }
     }
 
@@ -67,7 +68,7 @@ public class TimeProviderTests
             var today = DateTime.Today;
 
             //Act
-            var result = TimeProvider.Today;
+            var result = GlobalTimeProvider.Today;
 
             //Assert
             result.Should().Be(today);
@@ -77,11 +78,11 @@ public class TimeProviderTests
         public void WhenIsFrozenAndNotOverriden_ReturnFrozenTime()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
             //Act
-            var result = TimeProvider.Today;
+            var result = GlobalTimeProvider.Today;
 
             //Assert
             result.TrimMilliseconds().Should().Be(now.Date.TrimMilliseconds());
@@ -91,11 +92,11 @@ public class TimeProviderTests
         public void WhenIsNotFrozenAndOverriden_ReturnTimeDifferenceBetweenNowAndOverride()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Override(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Override(now);
 
             //Act
-            var result = TimeProvider.Today;
+            var result = GlobalTimeProvider.Today;
 
             //Assert
             result.TrimMilliseconds().Should().Be(now.Date.TrimMilliseconds());
@@ -111,7 +112,7 @@ public class TimeProviderTests
             //Arrange
 
             //Act
-            var result = TimeProvider.IsOverriden;
+            var result = GlobalTimeProvider.IsOverriden;
 
             //Assert
             result.Should().BeFalse();
@@ -121,10 +122,10 @@ public class TimeProviderTests
         public void WhenIsOverriden_ReturnTrue()
         {
             //Arrange
-            TimeProvider.Override(Fixture.Create<DateTime>());
+            GlobalTimeProvider.Override(Dummy.Create<DateTime>());
 
             //Act
-            var result = TimeProvider.IsOverriden;
+            var result = GlobalTimeProvider.IsOverriden;
 
             //Assert
             result.Should().BeTrue();
@@ -134,10 +135,10 @@ public class TimeProviderTests
         public void WhenIsFrozen_ReturnTrue()
         {
             //Arrange
-            TimeProvider.Freeze();
+            GlobalTimeProvider.Freeze();
 
             //Act
-            var result = TimeProvider.IsOverriden;
+            var result = GlobalTimeProvider.IsOverriden;
 
             //Assert
             result.Should().BeTrue();
@@ -153,7 +154,7 @@ public class TimeProviderTests
             //Arrange
 
             //Act
-            var result = TimeProvider.IsFrozen;
+            var result = GlobalTimeProvider.IsFrozen;
 
             //Assert
             result.Should().BeFalse();
@@ -163,10 +164,10 @@ public class TimeProviderTests
         public void WhenIsOverridenButNotFrozen_ReturnFalse()
         {
             //Arrange
-            TimeProvider.Override(Fixture.Create<DateTime>());
+            GlobalTimeProvider.Override(Dummy.Create<DateTime>());
 
             //Act
-            var result = TimeProvider.IsFrozen;
+            var result = GlobalTimeProvider.IsFrozen;
 
             //Assert
             result.Should().BeFalse();
@@ -176,10 +177,10 @@ public class TimeProviderTests
         public void WhenIsFrozen_ReturnTrue()
         {
             //Arrange
-            TimeProvider.Freeze();
+            GlobalTimeProvider.Freeze();
 
             //Act
-            var result = TimeProvider.IsFrozen;
+            var result = GlobalTimeProvider.IsFrozen;
 
             //Assert
             result.Should().BeTrue();
@@ -196,11 +197,11 @@ public class TimeProviderTests
             var now = DateTimeOffset.Now;
 
             //Act
-            TimeProvider.Freeze();
+            GlobalTimeProvider.Freeze();
 
             //Assert
             Thread.Sleep(1000);
-            TimeProvider.Now.TrimMilliseconds().Should().Be(now.TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(now.TrimMilliseconds());
         }
     }
 
@@ -211,14 +212,14 @@ public class TimeProviderTests
         public void Always_FreezeTimeInPlaceAtSpecifiedDate()
         {
             //Arrange
-            var date = Fixture.Create<DateTime>();
+            var date = Dummy.Create<DateTime>();
 
             //Act
-            TimeProvider.Freeze(date);
+            GlobalTimeProvider.Freeze(date);
 
             //Assert
             Thread.Sleep(1000);
-            TimeProvider.Now.Should().BeExactly(date);
+            GlobalTimeProvider.Now.Should().BeExactly(date);
         }
     }
 
@@ -229,14 +230,14 @@ public class TimeProviderTests
         public void Always_FreezeTimeInPlaceAtSpecifiedDate()
         {
             //Arrange
-            var date = Fixture.Create<DateTimeOffset>();
+            var date = Dummy.Create<DateTimeOffset>();
 
             //Act
-            TimeProvider.Freeze(date);
+            GlobalTimeProvider.Freeze(date);
 
             //Assert
             Thread.Sleep(1000);
-            TimeProvider.Now.Should().BeExactly(date);
+            GlobalTimeProvider.Now.Should().BeExactly(date);
         }
     }
 
@@ -247,52 +248,52 @@ public class TimeProviderTests
         public void WhenIsNotOverridenOrFrozen_DoNothing()
         {
             //Arrange
-            var now = TimeProvider.Now;
+            var now = GlobalTimeProvider.Now;
 
             //Act
-            TimeProvider.Reset();
+            GlobalTimeProvider.Reset();
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(now.TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(now.TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsFrozen_Unfreeze()
         {
             //Arrange
-            TimeProvider.Freeze(Fixture.Create<DateTimeOffset>());
+            GlobalTimeProvider.Freeze(Dummy.Create<DateTimeOffset>());
 
             //Act
-            TimeProvider.Reset();
+            GlobalTimeProvider.Reset();
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsFrozen_NowIsEqualToCurrentDateAndTime()
         {
             //Arrange
-            TimeProvider.Freeze(Fixture.Create<DateTimeOffset>());
+            GlobalTimeProvider.Freeze(Dummy.Create<DateTimeOffset>());
 
             //Act
-            TimeProvider.Reset();
+            GlobalTimeProvider.Reset();
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsOverridenAndNotFrozen_RemoveOverride()
         {
             //Arrange
-            TimeProvider.Override(Fixture.Create<DateTimeOffset>());
+            GlobalTimeProvider.Override(Dummy.Create<DateTimeOffset>());
 
             //Act
-            TimeProvider.Reset();
+            GlobalTimeProvider.Reset();
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeFalse();
+            GlobalTimeProvider.IsOverriden.Should().BeFalse();
         }
     }
 
@@ -303,53 +304,53 @@ public class TimeProviderTests
         public void WhenIsNotOverridenOrFrozen_DoNothing()
         {
             //Arrange
-            var now = TimeProvider.Now;
+            var now = GlobalTimeProvider.Now;
 
             //Act
-            TimeProvider.Unfreeze();
+            GlobalTimeProvider.Unfreeze();
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(now.TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(now.TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsOverridenAndNotFrozen_DoNothing()
         {
             //Arrange
-            var overridenDate = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Override(overridenDate);
+            var overridenDate = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Override(overridenDate);
 
             //Act
-            TimeProvider.Unfreeze();
+            GlobalTimeProvider.Unfreeze();
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(overridenDate.TrimMilliseconds());
+            GlobalTimeProvider.Now.Should().BeCloseTo(overridenDate, TimeSpan.FromMilliseconds(1000));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemoveFreeze()
         {
             //Arrange
-            TimeProvider.Freeze(Fixture.Create<DateTimeOffset>());
+            GlobalTimeProvider.Freeze(Dummy.Create<DateTimeOffset>());
 
             //Act
-            TimeProvider.Unfreeze();
+            GlobalTimeProvider.Unfreeze();
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsFrozen_NowIsEqualToCurrentDateAndTime()
         {
             //Arrange
-            TimeProvider.Freeze();
+            GlobalTimeProvider.Freeze();
 
             //Act
-            TimeProvider.Unfreeze();
+            GlobalTimeProvider.Unfreeze();
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.TrimMilliseconds());
         }
     }
 
@@ -360,10 +361,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.AddYears(value);
+            var action = () => GlobalTimeProvider.AddYears(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddYearsToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -376,7 +377,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.AddYears(value);
+            var action = () => GlobalTimeProvider.AddYears(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddYearsToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -386,71 +387,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.AddYears(value);
+            GlobalTimeProvider.AddYears(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddYears(value));
+            GlobalTimeProvider.Now.Should().Be(now.AddYears(value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.AddYears(value);
+            GlobalTimeProvider.AddYears(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.AddYears(value);
+            GlobalTimeProvider.AddYears(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddYears(value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddYears(value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.AddYears(value);
+            GlobalTimeProvider.AddYears(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.AddYears(value);
+            GlobalTimeProvider.AddYears(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -461,10 +462,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.SubtractYears(value);
+            var action = () => GlobalTimeProvider.SubtractYears(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractYearsFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -477,7 +478,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.SubtractYears(value);
+            var action = () => GlobalTimeProvider.SubtractYears(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractYearsFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -487,71 +488,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractYears(value);
+            GlobalTimeProvider.SubtractYears(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddYears(-value));
+            GlobalTimeProvider.Now.Should().Be(now.AddYears(-value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractYears(value);
+            GlobalTimeProvider.SubtractYears(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractYears(value);
+            GlobalTimeProvider.SubtractYears(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddYears(-value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddYears(-value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractYears(value);
+            GlobalTimeProvider.SubtractYears(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractYears(value);
+            GlobalTimeProvider.SubtractYears(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -562,10 +563,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.AddMonths(value);
+            var action = () => GlobalTimeProvider.AddMonths(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddMonthsToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -578,7 +579,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.AddMonths(value);
+            var action = () => GlobalTimeProvider.AddMonths(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddMonthsToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -588,71 +589,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Create<int>();
 
             //Act
-            TimeProvider.AddMonths(value);
+            GlobalTimeProvider.AddMonths(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddMonths(value));
+            GlobalTimeProvider.Now.Should().Be(now.AddMonths(value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Create<int>();
 
             //Act
-            TimeProvider.AddMonths(value);
+            GlobalTimeProvider.AddMonths(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Create<int>();
 
             //Act
-            TimeProvider.AddMonths(value);
+            GlobalTimeProvider.AddMonths(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMonths(value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMonths(value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Create<int>();
 
             //Act
-            TimeProvider.AddMonths(value);
+            GlobalTimeProvider.AddMonths(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Create<int>();
 
             //Act
-            TimeProvider.AddMonths(value);
+            GlobalTimeProvider.AddMonths(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -663,10 +664,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.SubtractMonths(value);
+            var action = () => GlobalTimeProvider.SubtractMonths(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractMonthsFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -679,7 +680,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.SubtractMonths(value);
+            var action = () => GlobalTimeProvider.SubtractMonths(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractMonthsFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -689,71 +690,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractMonths(value);
+            GlobalTimeProvider.SubtractMonths(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddMonths(-value));
+            GlobalTimeProvider.Now.Should().Be(now.AddMonths(-value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractMonths(value);
+            GlobalTimeProvider.SubtractMonths(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractMonths(value);
+            GlobalTimeProvider.SubtractMonths(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMonths(-value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMonths(-value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractMonths(value);
+            GlobalTimeProvider.SubtractMonths(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100).Create();
 
             //Act
-            TimeProvider.SubtractMonths(value);
+            GlobalTimeProvider.SubtractMonths(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -764,10 +765,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.AddDays(value);
+            var action = () => GlobalTimeProvider.AddDays(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddDaysToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -780,7 +781,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.AddDays(value);
+            var action = () => GlobalTimeProvider.AddDays(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddDaysToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -790,71 +791,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.AddDays(value);
+            GlobalTimeProvider.AddDays(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddDays(value));
+            GlobalTimeProvider.Now.Should().Be(now.AddDays(value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.AddDays(value);
+            GlobalTimeProvider.AddDays(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.AddDays(value);
+            GlobalTimeProvider.AddDays(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddDays(value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddDays(value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.AddDays(value);
+            GlobalTimeProvider.AddDays(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.AddDays(value);
+            GlobalTimeProvider.AddDays(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -865,10 +866,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.SubtractDays(value);
+            var action = () => GlobalTimeProvider.SubtractDays(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractDaysFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -881,7 +882,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.SubtractDays(value);
+            var action = () => GlobalTimeProvider.SubtractDays(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractDaysFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -891,71 +892,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.SubtractDays(value);
+            GlobalTimeProvider.SubtractDays(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddDays(-value));
+            GlobalTimeProvider.Now.Should().Be(now.AddDays(-value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.SubtractDays(value);
+            GlobalTimeProvider.SubtractDays(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.SubtractDays(value);
+            GlobalTimeProvider.SubtractDays(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddDays(-value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddDays(-value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.SubtractDays(value);
+            GlobalTimeProvider.SubtractDays(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000).Create();
 
             //Act
-            TimeProvider.SubtractDays(value);
+            GlobalTimeProvider.SubtractDays(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -966,10 +967,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.AddHours(value);
+            var action = () => GlobalTimeProvider.AddHours(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddHoursToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -982,7 +983,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.AddHours(value);
+            var action = () => GlobalTimeProvider.AddHours(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddHoursToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -992,71 +993,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.AddHours(value);
+            GlobalTimeProvider.AddHours(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddHours(value));
+            GlobalTimeProvider.Now.Should().Be(now.AddHours(value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.AddHours(value);
+            GlobalTimeProvider.AddHours(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.AddHours(value);
+            GlobalTimeProvider.AddHours(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddHours(value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddHours(value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.AddHours(value);
+            GlobalTimeProvider.AddHours(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.AddHours(value);
+            GlobalTimeProvider.AddHours(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -1067,10 +1068,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.SubtractHours(value);
+            var action = () => GlobalTimeProvider.SubtractHours(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractHoursFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1083,7 +1084,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.SubtractHours(value);
+            var action = () => GlobalTimeProvider.SubtractHours(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractHoursFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1093,71 +1094,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.SubtractHours(value);
+            GlobalTimeProvider.SubtractHours(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddHours(-value));
+            GlobalTimeProvider.Now.Should().Be(now.AddHours(-value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.SubtractHours(value);
+            GlobalTimeProvider.SubtractHours(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.SubtractHours(value);
+            GlobalTimeProvider.SubtractHours(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddHours(-value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddHours(-value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.SubtractHours(value);
+            GlobalTimeProvider.SubtractHours(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 10000).Create();
 
             //Act
-            TimeProvider.SubtractHours(value);
+            GlobalTimeProvider.SubtractHours(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -1168,10 +1169,11 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Number.Between(1, 100000).Create();
+
 
             //Act
-            var action = () => TimeProvider.AddMinutes(value);
+            var action = () => GlobalTimeProvider.AddMinutes(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddMinutesToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1184,7 +1186,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.AddMinutes(value);
+            var action = () => GlobalTimeProvider.AddMinutes(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddMinutesToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1194,71 +1196,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.AddMinutes(value);
+            GlobalTimeProvider.AddMinutes(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddMinutes(value));
+            GlobalTimeProvider.Now.Should().Be(now.AddMinutes(value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.AddMinutes(value);
+            GlobalTimeProvider.AddMinutes(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.AddMinutes(value);
+            GlobalTimeProvider.AddMinutes(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMinutes(value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMinutes(value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.AddMinutes(value);
+            GlobalTimeProvider.AddMinutes(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.AddMinutes(value);
+            GlobalTimeProvider.AddMinutes(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -1269,10 +1271,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.SubtractMinutes(value);
+            var action = () => GlobalTimeProvider.SubtractMinutes(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractMinutesFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1285,7 +1287,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.SubtractMinutes(value);
+            var action = () => GlobalTimeProvider.SubtractMinutes(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractMinutesFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1295,71 +1297,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.SubtractMinutes(value);
+            GlobalTimeProvider.SubtractMinutes(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddMinutes(-value));
+            GlobalTimeProvider.Now.Should().Be(now.AddMinutes(-value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.SubtractMinutes(value);
+            GlobalTimeProvider.SubtractMinutes(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.SubtractMinutes(value);
+            GlobalTimeProvider.SubtractMinutes(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMinutes(-value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMinutes(-value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.SubtractMinutes(value);
+            GlobalTimeProvider.SubtractMinutes(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 100000).Create();
 
             //Act
-            TimeProvider.SubtractMinutes(value);
+            GlobalTimeProvider.SubtractMinutes(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -1370,10 +1372,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.AddSeconds(value);
+            var action = () => GlobalTimeProvider.AddSeconds(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddSecondsToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1386,7 +1388,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.AddSeconds(value);
+            var action = () => GlobalTimeProvider.AddSeconds(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddSecondsToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1396,71 +1398,72 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
+
 
             //Act
-            TimeProvider.AddSeconds(value);
+            GlobalTimeProvider.AddSeconds(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddSeconds(value));
+            GlobalTimeProvider.Now.Should().Be(now.AddSeconds(value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddSeconds(value);
+            GlobalTimeProvider.AddSeconds(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddSeconds(value);
+            GlobalTimeProvider.AddSeconds(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddSeconds(value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddSeconds(value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddSeconds(value);
+            GlobalTimeProvider.AddSeconds(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddSeconds(value);
+            GlobalTimeProvider.AddSeconds(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -1471,10 +1474,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.SubtractSeconds(value);
+            var action = () => GlobalTimeProvider.SubtractSeconds(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractSecondsFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1487,7 +1490,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.SubtractSeconds(value);
+            var action = () => GlobalTimeProvider.SubtractSeconds(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractSecondsFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1497,71 +1500,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractSeconds(value);
+            GlobalTimeProvider.SubtractSeconds(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddSeconds(-value));
+            GlobalTimeProvider.Now.Should().Be(now.AddSeconds(-value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractSeconds(value);
+            GlobalTimeProvider.SubtractSeconds(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractSeconds(value);
+            GlobalTimeProvider.SubtractSeconds(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddSeconds(-value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddSeconds(-value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractSeconds(value);
+            GlobalTimeProvider.SubtractSeconds(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractSeconds(value);
+            GlobalTimeProvider.SubtractSeconds(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -1572,10 +1575,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.AddMilliseconds(value);
+            var action = () => GlobalTimeProvider.AddMilliseconds(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddMillisecondsToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1588,7 +1591,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.AddMilliseconds(value);
+            var action = () => GlobalTimeProvider.AddMilliseconds(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotAddMillisecondsToCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1598,71 +1601,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddMilliseconds(value);
+            GlobalTimeProvider.AddMilliseconds(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddMilliseconds(value));
+            GlobalTimeProvider.Now.Should().Be(now.AddMilliseconds(value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddMilliseconds(value);
+            GlobalTimeProvider.AddMilliseconds(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddMilliseconds(value);
+            GlobalTimeProvider.AddMilliseconds(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMilliseconds(value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMilliseconds(value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddMilliseconds(value);
+            GlobalTimeProvider.AddMilliseconds(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.AddMilliseconds(value);
+            GlobalTimeProvider.AddMilliseconds(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 
@@ -1673,10 +1676,10 @@ public class TimeProviderTests
         public void WhenValueIsNegative_Throw()
         {
             //Arrange
-            var value = -Fixture.Create<int>();
+            var value = -Dummy.Create<int>();
 
             //Act
-            var action = () => TimeProvider.SubtractMilliseconds(value);
+            var action = () => GlobalTimeProvider.SubtractMilliseconds(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractMillisecondsFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1689,7 +1692,7 @@ public class TimeProviderTests
             const int value = 0;
 
             //Act
-            var action = () => TimeProvider.SubtractMilliseconds(value);
+            var action = () => GlobalTimeProvider.SubtractMilliseconds(value);
 
             //Assert
             action.Should().Throw<ArgumentException>().WithMessage(string.Format(Exceptions.CannotSubtractMillisecondsFromCurrentDateBecauseValueIsLowerThanZero, value));
@@ -1699,71 +1702,71 @@ public class TimeProviderTests
         public void WhenIsFrozen_FreezeToNewDate()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractMilliseconds(value);
+            GlobalTimeProvider.SubtractMilliseconds(value);
 
             //Assert
-            TimeProvider.Now.Should().Be(now.AddMilliseconds(-value));
+            GlobalTimeProvider.Now.Should().Be(now.AddMilliseconds(-value));
         }
 
         [TestMethod]
         public void WhenIsFrozen_RemainFrozen()
         {
             //Arrange
-            var now = Fixture.Create<DateTimeOffset>();
-            TimeProvider.Freeze(now);
+            var now = Dummy.Create<DateTimeOffset>();
+            GlobalTimeProvider.Freeze(now);
 
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractMilliseconds(value);
+            GlobalTimeProvider.SubtractMilliseconds(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeTrue();
+            GlobalTimeProvider.IsFrozen.Should().BeTrue();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_OverrideToNewDate()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractMilliseconds(value);
+            GlobalTimeProvider.SubtractMilliseconds(value);
 
             //Assert
-            TimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMilliseconds(-value).TrimMilliseconds());
+            GlobalTimeProvider.Now.TrimMilliseconds().Should().Be(DateTimeOffset.Now.AddMilliseconds(-value).TrimMilliseconds());
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_DoNotFreeze()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractMilliseconds(value);
+            GlobalTimeProvider.SubtractMilliseconds(value);
 
             //Assert
-            TimeProvider.IsFrozen.Should().BeFalse();
+            GlobalTimeProvider.IsFrozen.Should().BeFalse();
         }
 
         [TestMethod]
         public void WhenIsNotFrozen_IsOverridenIsTrue()
         {
             //Arrange
-            var value = Fixture.Create<int>();
+            var value = Dummy.Number.Between(1, 1000000).Create();
 
             //Act
-            TimeProvider.SubtractMilliseconds(value);
+            GlobalTimeProvider.SubtractMilliseconds(value);
 
             //Assert
-            TimeProvider.IsOverriden.Should().BeTrue();
+            GlobalTimeProvider.IsOverriden.Should().BeTrue();
         }
     }
 }
