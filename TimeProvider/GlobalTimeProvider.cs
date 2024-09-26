@@ -1,6 +1,6 @@
 ﻿namespace ToolBX.TimeProvider;
 
-public static class TimeProvider
+public static class GlobalTimeProvider
 {
     public static DateTimeOffset Now
     {
@@ -19,7 +19,10 @@ public static class TimeProvider
                 .AddHours(difference.Hour)
                 .AddMinutes(difference.Minute)
                 .AddSeconds(difference.Second)
-                .AddMilliseconds(difference.Millisecond);
+                .AddMilliseconds(difference.Millisecond)
+                .AddMicroseconds(difference.Microsecond)
+                .Subtract(difference.Offset)
+                .ToOffset(difference.NewOffset);
         }
     }
 
@@ -53,7 +56,11 @@ public static class TimeProvider
             Hour = date.Hour - now.Hour,
             Minute = date.Minute - now.Minute,
             Second = date.Second - now.Second,
-            Millisecond = date.Millisecond - now.Millisecond
+            Millisecond = date.Millisecond - now.Millisecond,
+            Microsecond = date.Microsecond - now.Microsecond,
+            Offset = date.Offset - now.Offset,
+            NewOffset = date.Offset,
+            OldOffset = now.Offset
         };
     }
 
