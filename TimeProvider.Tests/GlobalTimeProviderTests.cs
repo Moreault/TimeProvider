@@ -219,7 +219,7 @@ public class GlobalTimeProviderTests
 
             //Assert
             Thread.Sleep(1000);
-            GlobalTimeProvider.Now.Should().BeExactly(date);
+            GlobalTimeProvider.Now.Should().Be(date);
         }
     }
 
@@ -237,7 +237,7 @@ public class GlobalTimeProviderTests
 
             //Assert
             Thread.Sleep(1000);
-            GlobalTimeProvider.Now.Should().BeExactly(date);
+            GlobalTimeProvider.Now.Should().Be(date);
         }
     }
 
